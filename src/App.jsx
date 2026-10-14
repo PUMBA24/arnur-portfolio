@@ -3,6 +3,19 @@ import './App.css';
 
 const skills = ['React', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git'];
 
+function BrandLogo() {
+  return (
+    <a className="brand-logo" href="#home" aria-label="Арнур — на главную">
+      <svg className="brand-logo-mark" viewBox="0 0 44 44" aria-hidden="true">
+        <rect width="44" height="44" rx="13" fill="#26392d" />
+        <path d="M11 31.5 20.2 12h4.2l9.1 19.5h-5.1l-2-4.5H18l-2 4.5H11Zm8.8-8.4h4.8l-2.4-5.5-2.4 5.5Z" fill="#fbfaf7" />
+        <path d="m27.7 12 5.8 5.8-3.1 3.1-5.8-5.8z" fill="#d7fa63" />
+      </svg>
+      <span className="brand-logo-name">arnur<span>.</span></span>
+    </a>
+  );
+}
+
 function App() {
   const [projects, setProjects] = useState([]);
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
@@ -119,9 +132,7 @@ function App() {
   return (
     <>
       <header className="site-header">
-        <a className="wordmark" href="#home" aria-label="Арнур — на главную">
-          arnur<span>.</span>
-        </a>
+        <BrandLogo />
         <nav className="navigation" aria-label="Основная навигация">
           <a href="#about">Обо мне</a>
           <a href="#projects">Проекты</a>
@@ -320,7 +331,7 @@ function App() {
       </main>
 
       <footer className="site-footer">
-        <a className="wordmark" href="#home">arnur<span>.</span></a>
+        <BrandLogo />
         <span>Сделано с интересом к каждой детали.</span>
         <a className="back-to-top" href="#home">Наверх ↑</a>
       </footer>
