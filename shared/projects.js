@@ -1,0 +1,32 @@
+export const projects = [
+  {
+    id: 'task-flow',
+    title: 'Task Flow',
+    category: 'Продуктивность',
+    description: 'Минималистичный список задач для повседневного планирования.',
+    stack: ['React', 'CSS'],
+    visual: 'tasks',
+    demoUrl: '',
+    sourceUrl: '',
+  },
+  {
+    id: 'fin-dash',
+    title: 'FinDash',
+    category: 'Финансы',
+    description: 'Учебный дашборд для наглядного отображения личных расходов.',
+    stack: ['JavaScript', 'Charts'],
+    visual: 'finance',
+    demoUrl: '',
+    sourceUrl: '',
+  },
+  {
+    id: 'aroma-coffee',
+    title: 'Aroma Coffee',
+    category: 'Веб-дизайн',
+    description: 'Концепция аккуратной страницы для локальной кофейни.',
+    stack: ['React', 'Responsive'],
+    visual: 'coffee',
+    demoUrl: '',
+    sourceUrl: '',
+  },
+];

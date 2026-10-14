@@ -3,6 +3,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import express from 'express';
+import { validateContact } from '../shared/contact.js';
+import { projects } from '../shared/projects.js';
 
 const serverDirectory = dirname(fileURLToPath(import.meta.url));
 const projectDirectory = resolve(serverDirectory, '..');
@@ -29,42 +31,8 @@ const saveMessage = database.prepare(`
   VALUES (@name, @email, @message)
 `);
 
-const projects = [
-  {
-    id: 'task-flow',
-    title: 'Task Flow',
-    category: 'Продуктивность',
-    description: 'Минималистичный список задач для повседневного планирования.',
-    stack: ['React', 'CSS'],
-    visual: 'tasks',
-    demoUrl: '',
-    sourceUrl: '',
-  },
-  {
-    id: 'fin-dash',
-    title: 'FinDash',
-    category: 'Финансы',
-    description: 'Учебный дашборд для наглядного отображения личных расходов.',
-    stack: ['JavaScript', 'Charts'],
-    visual: 'finance',
-    demoUrl: '',
-    sourceUrl: '',
-  },
-  {
-    id: 'aroma-coffee',
-    title: 'Aroma Coffee',
-    category: 'Веб-дизайн',
-    description: 'Концепция аккуратной страницы для локальной кофейни.',
-    stack: ['React', 'Responsive'],
-    visual: 'coffee',
-    demoUrl: '',
-    sourceUrl: '',
-  },
-];
-
 const app = express();
 const port = Number(process.env.PORT) || 3000;
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '10kb' }));
@@ -78,32 +46,9 @@ app.get('/api/projects', (_request, response) => {
 });
 
 app.post('/api/contact', (request, response, next) => {
-  const { name, email, message } = request.body ?? {};
-
-  if (
-    typeof name !== 'string'
-    || typeof email !== 'string'
-    || typeof message !== 'string'
-  ) {
-    return response.status(400).json({ error: 'Заполните все поля формы.' });
-  }
-
-  const contact = {
-    name: name.trim(),
-    email: email.trim(),
-    message: message.trim(),
-  };
-
-  if (!contact.name || contact.name.length > 80) {
-    return response.status(400).json({ error: 'Имя должно содержать от 1 до 80 символов.' });
-  }
-
-  if (contact.email.length > 254 || !emailPattern.test(contact.email)) {
-    return response.status(400).json({ error: 'Укажите корректный адрес электронной почты.' });
-  }
-
-  if (!contact.message || contact.message.length > 3000) {
-    return response.status(400).json({ error: 'Сообщение должно содержать от 1 до 3000 символов.' });
+  const { contact, error } = validateContact(request.body);
+  if (error) {
+    return response.status(400).json({ error });
   }
 
   try {
