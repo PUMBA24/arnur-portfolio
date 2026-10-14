@@ -216,9 +216,27 @@ function App() {
 
                 return (
                   <article className="project-slide" key={project.id} aria-live="off">
-                    <div className="project-shot-wrap">
-                      <img className="project-shot" src={project.screenshot} alt={project.screenshotAlt} />
-                      <span className="project-concept-label">Учебный концепт</span>
+                    <div className={`project-shot-wrap project-shot-wrap--${project.visual}`}>
+                      <div className={`project-website project-website--${project.visual}`}>
+                        <header className="project-site-nav">
+                          <span className="project-site-logo">{project.logo}</span>
+                          <nav aria-label={`Навигация сайта ${project.title}`}>
+                            {project.navigation.map((item) => <span key={item}>{item}</span>)}
+                          </nav>
+                          <span className="project-site-action">{project.action}</span>
+                        </header>
+                        <div className="project-site-hero">
+                          <img className="project-photo" src={project.photo} alt={project.photoAlt} />
+                          <div className="project-site-copy">
+                            <p className="project-site-eyebrow">{project.siteEyebrow}</p>
+                            <h4>{project.heroTitle}</h4>
+                            <p>{project.heroCopy}</p>
+                            <span className="project-site-button">{project.action} <span>↗</span></span>
+                          </div>
+                          <span className="project-photo-index">0{index + 1} — 03</span>
+                        </div>
+                        <span className="project-concept-label">Дизайн-концепт</span>
+                      </div>
                     </div>
                     <div className="project-info">
                       <p className="project-category">{project.category}</p>
