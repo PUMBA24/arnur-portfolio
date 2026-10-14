@@ -48,23 +48,53 @@ function App() {
     const values = Object.fromEntries(new FormData(form));
 
     try {
-      const response = await fetch('/api/contact', {
+      const emailResponse = await fetch('https://formsubmit.co/ajax/arnurmedetuly777@gmail.com', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          ...values,
+          _subject: `Новое сообщение с портфолио от ${values.name}`,
+          _replyto: values.email,
+          _template: 'table',
+        }),
       });
-      const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Не удалось отправить сообщение.');
+      if (!emailResponse.ok) {
+        throw new Error('Не удалось отправить письмо. Попробуйте позже.');
       }
 
+      const emailResult = await emailResponse.json();
+      if (emailResult.success !== 'true' && emailResult.success !== true) {
+        throw new Error(emailResult.message || 'Сервис не подтвердил отправку письма.');
+      }
+
+      let archiveFailed = false;
+      try {
+        const archiveResponse = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values),
+        });
+        archiveFailed = !archiveResponse.ok;
+      } catch (error) {
+        console.error('Не удалось сохранить резервную копию сообщения:', error);
+        archiveFailed = true;
+      }
+
+      if (archiveFailed) {
+        console.error('Сообщение отправлено по почте, но резервная копия не сохранена.');
+      }
       form.reset();
-      setFormMessage({ type: 'success', text: result.message });
+      setFormMessage({
+        type: 'success',
+        text: archiveFailed
+          ? 'Сообщение отправлено на почту, но резервную копию сохранить не удалось.'
+          : 'Спасибо! Сообщение отправлено на почту.',
+      });
     } catch (error) {
       setFormMessage({
         type: 'error',
-        text: error.message || 'Не удалось подключиться к серверу.',
+        text: error.message || 'Не удалось подключиться к сервису отправки почты.',
       });
     } finally {
       setIsSending(false);
