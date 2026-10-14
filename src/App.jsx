@@ -5,6 +5,8 @@ const skills = ['React', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git'];
 
 function App() {
   const [projects, setProjects] = useState([]);
+  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const [isProjectCarouselPaused, setIsProjectCarouselPaused] = useState(false);
   const [projectsError, setProjectsError] = useState('');
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [isSending, setIsSending] = useState(false);
@@ -38,6 +40,19 @@ function App() {
       isCurrent = false;
     };
   }, []);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (projects.length < 2 || isProjectCarouselPaused || prefersReducedMotion) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveProjectIndex((currentIndex) => (currentIndex + 1) % projects.length);
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isProjectCarouselPaused, projects.length]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -174,7 +189,7 @@ function App() {
               <p className="eyebrow">02 / Избранное</p>
               <h2>Проекты<span>.</span></h2>
             </div>
-            <p className="section-note">Небольшие учебные проекты,<br />в которых я применяю знания на практике.</p>
+            <p className="section-note">Концепты сайтов для локального бизнеса<br />и сферы услуг.</p>
           </div>
 
           {projectsError ? (
@@ -182,73 +197,78 @@ function App() {
           ) : isLoadingProjects ? (
             <p className="projects-message" role="status">Загружаю проекты…</p>
           ) : projects.length === 0 ? (
-            <p className="projects-message" role="status">Добавьте проекты в <code>server/index.js</code>, чтобы показать их здесь.</p>
+            <p className="projects-message" role="status">Добавьте проекты в <code>shared/projects.js</code>, чтобы показать их здесь.</p>
           ) : (
-            <div className="project-grid">
-              {projects.map((project, index) => (
-                <article className="project-card" key={project.id}>
-                  <div className={`project-preview preview-${project.visual}`} aria-hidden="true">
-                    {project.visual === 'tasks' && (
-                      <div className="task-preview">
-                        <span className="preview-label">ПЛАН НА ДЕНЬ</span>
-                        <div className="task-row"><i className="task-check">✓</i><span>Разобрать макет</span><b>09:30</b></div>
-                        <div className="task-row"><i /><span>Собрать страницу</span><b>11:00</b></div>
-                        <div className="task-row"><i /><span>Проверить детали</span><b>14:20</b></div>
+            <div
+              className="project-carousel"
+              onMouseEnter={() => setIsProjectCarouselPaused(true)}
+              onMouseLeave={() => setIsProjectCarouselPaused(false)}
+              onFocus={() => setIsProjectCarouselPaused(true)}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  setIsProjectCarouselPaused(false);
+                }
+              }}
+            >
+              {(() => {
+                const project = projects[activeProjectIndex] ?? projects[0];
+                const index = projects.indexOf(project);
+
+                return (
+                  <article className="project-slide" key={project.id} aria-live="off">
+                    <div className="project-shot-wrap">
+                      <img className="project-shot" src={project.screenshot} alt={project.screenshotAlt} />
+                      <span className="project-concept-label">Учебный концепт</span>
+                    </div>
+                    <div className="project-info">
+                      <p className="project-category">{project.category}</p>
+                      <div className="project-title-row">
+                        <h3>{project.title}</h3>
+                        <span className="project-number">{String(index + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}</span>
                       </div>
-                    )}
-                    {project.visual === 'finance' && (
-                      <div className="finance-preview">
-                        <span className="preview-label">ОБЩИЙ БАЛАНС</span>
-                        <strong>₸ 248 500</strong>
-                        <div className="chart-bars">
-                          {[32, 52, 39, 72, 45, 88, 61, 100, 70, 84, 58, 95].map((height, barIndex) => (
-                            <i key={barIndex} style={{ '--bar-height': `${height}%` }} />
+                      <p className="project-description">{project.description}</p>
+                      <p className="project-explanation">{project.explanation}</p>
+                      <div className="project-tags">
+                        {project.stack.map((item) => <span key={item}>{item}</span>)}
+                      </div>
+                      <div className="project-carousel-controls" aria-label="Управление проектами">
+                        <button
+                          className="project-arrow"
+                          type="button"
+                          aria-label="Предыдущий проект"
+                          onClick={() => setActiveProjectIndex((index - 1 + projects.length) % projects.length)}
+                        >
+                          ←
+                        </button>
+                        <div className="project-dots" role="group" aria-label="Выбрать проект">
+                          {projects.map((item, itemIndex) => (
+                            <button
+                              className={`project-dot${itemIndex === index ? ' active' : ''}`}
+                              key={item.id}
+                              type="button"
+                              aria-label={`Проект ${itemIndex + 1}: ${item.title}`}
+                              aria-current={itemIndex === index ? 'true' : undefined}
+                              onClick={() => setActiveProjectIndex(itemIndex)}
+                            />
                           ))}
                         </div>
+                        <button
+                          className="project-arrow"
+                          type="button"
+                          aria-label="Следующий проект"
+                          onClick={() => setActiveProjectIndex((index + 1) % projects.length)}
+                        >
+                          →
+                        </button>
                       </div>
-                    )}
-                    {project.visual === 'coffee' && (
-                      <div className="coffee-preview">
-                        <span className="coffee-bean bean-one" />
-                        <span className="coffee-bean bean-two" />
-                        <span className="coffee-bean bean-three" />
-                        <span className="coffee-cup">A.</span>
-                        <span className="coffee-stamp">FRESH<br />COFFEE</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="project-info">
-                    <div className="project-title-row">
-                      <div>
-                        <p className="project-category">{project.category}</p>
-                        <h3>{project.title}</h3>
-                      </div>
-                      <span className="project-number">0{index + 1}</span>
+                      <p className="project-carousel-hint">Смена автоматически каждые 3 секунды · наведите курсор, чтобы остановить</p>
                     </div>
-                    <p className="project-description">{project.description}</p>
-                    <div className="project-tags">
-                      {project.stack.map((item) => <span key={item}>{item}</span>)}
-                    </div>
-                    {(project.demoUrl || project.sourceUrl) && (
-                      <div className="project-links">
-                        {project.demoUrl && (
-                          <a href={project.demoUrl} target="_blank" rel="noreferrer">
-                            Демо <span>↗</span>
-                          </a>
-                        )}
-                        {project.sourceUrl && (
-                          <a href={project.sourceUrl} target="_blank" rel="noreferrer">
-                            Код <span>↗</span>
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })()}
             </div>
           )}
-          <p className="portfolio-note">Проекты в портфолио — учебные примеры. Замените их своими реальными работами.</p>
+          <p className="portfolio-note">Это демонстрационные концепты, созданные для портфолио, а не заказы реальных клиентов.</p>
         </section>
 
         <section className="contact section-wrap" id="contact">
