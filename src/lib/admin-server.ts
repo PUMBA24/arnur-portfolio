@@ -2,7 +2,8 @@ const encoder = new TextEncoder();
 const sessionCookieName = 'portfolio_admin';
 export const adminSessionDurationMs = 7 * 24 * 60 * 60 * 1000;
 export const minimumAdminPasswordLength = 14;
-const passwordIterations = 600_000;
+// Cloudflare Workers rejects PBKDF2 iteration counts above 100,000.
+const passwordIterations = 100_000;
 
 export type D1PreparedStatement = {
   bind(...values: Array<string | number | null>): D1PreparedStatement;
