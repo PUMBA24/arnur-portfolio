@@ -8,7 +8,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
+      defaultTheme="dark"
       enableSystem={false}
       storageKey="portfolio-theme-v2"
     >
