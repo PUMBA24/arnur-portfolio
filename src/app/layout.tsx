@@ -11,6 +11,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arnurmedetuly777-po
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   icons: { icon: '/favicon.svg' },
+  alternates: { canonical: siteUrl },
   title: {
     default: `${site.name} — junior веб-разработчик`,
     template: `%s · ${site.name}`,
@@ -18,13 +19,26 @@ export const metadata: Metadata = {
   description:
     'Портфолио junior frontend-разработчика из Казахстана: учебные проекты, ориентиры по стоимости и простой способ обсудить сайт.',
   openGraph: {
+    url: siteUrl,
     title: `${site.name} — junior веб-разработчик`,
     description: 'Учебные проекты, понятные цены и связь без лишних формальностей.',
     type: 'website',
     locale: 'ru_KZ',
-    images: [{ url: '/promo-banner.png', width: 1200, height: 630 }],
+    images: [
+      {
+        url: '/promo-banner.png',
+        width: 1200,
+        height: 630,
+        alt: 'Портфолио Арнура — сайты для малого бизнеса',
+      },
+    ],
   },
-  twitter: { card: 'summary_large_image', images: ['/promo-banner.png'] },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${site.name} — junior веб-разработчик`,
+    description: 'Учебные проекты, ориентиры по стоимости и связь без лишних формальностей.',
+    images: [{ url: '/promo-banner.png', alt: 'Портфолио Арнура — сайты для малого бизнеса' }],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
