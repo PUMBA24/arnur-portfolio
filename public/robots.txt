@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://arnurmedetuly777-portfolio.pages.dev/sitemap.xml

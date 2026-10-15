@@ -1,0 +1,88 @@
+.card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper-raised);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #aab78a;
+}
+
+.imageLink {
+  display: block;
+  overflow: hidden;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 225px;
+  object-fit: cover;
+  transition: transform 350ms ease;
+}
+
+.card:hover .image {
+  transform: scale(1.035);
+}
+
+.copy {
+  padding: 20px 22px 22px;
+}
+
+.category {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.copy h3 {
+  margin: 10px 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.copy > p:not(.category) {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 14px 0;
+}
+
+.tags span {
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.detailLink {
+  display: inline-flex;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.detailLink:hover {
+  color: var(--olive);
+}
+
+@media (max-width: 700px) {
+  .image {
+    height: 190px;
+  }
+}
