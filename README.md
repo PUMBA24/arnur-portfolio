@@ -48,8 +48,8 @@ npm run build
 | Адрес сайта для metadata, sitemap и robots                 | `NEXT_PUBLIC_SITE_URL` в `.env.local`                          |
 | Telegram-секреты локального Pages-эмулятора                | `.dev.vars`                                                    |
 
-Перед запуском замените `[ВАШ TELEGRAM]` и `[ВАШ WHATSAPP]` в `src/data/site.ts` на настоящие
-контакты. Ссылки Telegram и WhatsApp появятся, только если в этих полях указаны значения.
+Перед публикацией замените `[ВАШ TELEGRAM]` в `src/data/site.ts` на свой Telegram. WhatsApp уже
+настроен; ссылка автоматически преобразует номер в формат, который ожидает `wa.me`.
 
 Проекты и фотографии лежат отдельно: описания — в `src/data/site.ts`, изображения — в
 `public/projects/`. Для новой работы скопируйте объект проекта, задайте новый уникальный `slug`,

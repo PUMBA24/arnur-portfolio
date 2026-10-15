@@ -4,7 +4,7 @@ export const site = {
   location: 'Алматы, Казахстан',
   email: 'arnurmedetuly777@gmail.com',
   telegram: '[ВАШ TELEGRAM]',
-  whatsapp: '[ВАШ WHATSAPP]',
+  whatsapp: '+7 747 906 70 52',
   availableForWork: true,
   skills: ['React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git'],
 } as const;
