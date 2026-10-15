@@ -56,7 +56,7 @@ function jsonError(error: string, status: number) {
   return Response.json({ error }, { status });
 }
 
-function createFormSubmitPayload(data: ContactRequest) {
+function createFormSubmitPayload(data: ContactRequest, contactPageUrl: string) {
   const budget =
     data.budget === 'custom'
       ? `${data.customBudget} ₸ (сумма указана посетителем)`
@@ -66,7 +66,7 @@ function createFormSubmitPayload(data: ContactRequest) {
     name: 'Заявка с портфолио Арнура',
     _subject: 'Новая заявка с портфолио',
     _template: 'table',
-    _url: 'https://arnurmedetuly777-portfolio.pages.dev/contact',
+    _url: contactPageUrl,
     project_type: projectTypeLabels[data.type],
     description: data.description,
     budget,
@@ -112,6 +112,8 @@ export async function onRequestPost({ request, env }: FunctionContext) {
 
   const data = parsed.data;
   if (data.website) return Response.json({ ok: true });
+  const requestUrl = new URL(request.url);
+  const contactPageUrl = new URL('/contact', requestUrl).toString();
 
   const budget =
     data.budget === 'custom'
@@ -149,8 +151,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        // FormSubmit rejects server-side AJAX without the page origin and referrer.
+        Origin: requestUrl.origin,
+        Referer: contactPageUrl,
       },
-      body: JSON.stringify(createFormSubmitPayload(data)),
+      body: JSON.stringify(createFormSubmitPayload(data, contactPageUrl)),
       signal: AbortSignal.timeout(10_000),
     });
     const result: unknown = await response.json();
