@@ -19,9 +19,8 @@ npm run dev
 ```
 
 Откройте <http://localhost:3000>. Для проверки формы вместе с Cloudflare Pages Function запустите
-`npm run pages:preview`: команда соберёт сайт и откроет Pages-эмулятор. Скопируйте
-`.dev.vars.example` в `.dev.vars` и добавьте секреты Telegram. В `next dev` Pages Function не
-запускается.
+`npm run pages:preview`: команда соберёт сайт и откроет Pages-эмулятор. Форма отправляется через
+FormSubmit, поэтому Telegram-секреты для неё не нужны. В `next dev` Pages Function не запускается.
 
 Проверки проекта:
 
@@ -46,7 +45,6 @@ npm run build
 | Секции и оформление главной страницы                       | `src/app/page.tsx` и `src/app/home.css`                        |
 | Изолированное оформление карточки проекта                  | `src/components/ProjectCard.module.css`                        |
 | Адрес сайта для metadata, sitemap и robots                 | `NEXT_PUBLIC_SITE_URL` в `.env.local`                          |
-| Telegram-секреты локального Pages-эмулятора                | `.dev.vars`                                                    |
 
 Перед публикацией замените `[ВАШ TELEGRAM]` в `src/data/site.ts` на свой Telegram. WhatsApp уже
 настроен; ссылка автоматически преобразует номер в формат, который ожидает `wa.me`.
@@ -57,18 +55,13 @@ npm run build
 
 ## Отправка заявок
 
-1. Создайте бота через [@BotFather](https://t.me/BotFather) и получите токен.
-2. Напишите боту любое сообщение, затем безопасно получите ID своего чата через Telegram Bot API.
-3. Для локальной проверки скопируйте `.dev.vars.example` в `.dev.vars` и задайте
-   `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID`.
-4. Для Cloudflare Pages задайте эти секреты для Production и Preview в Settings → Variables and
-   Secrets, затем отправьте тестовую заявку через `npm run pages:preview`.
-
-Токен хранится только на сервере. Не добавляйте `.env.local` и секреты в Git. В production
-переменные задаются в настройках хостинга, а не в коде.
+Заявки отправляет Cloudflare Pages Function на FormSubmit, используя адрес `contactEmail` из
+`src/data/contact.ts`. При первой отправке FormSubmit присылает владельцу адреса письмо для
+активации формы. Откройте его и подтвердите адрес; проверьте папку «Спам», если письма нет. До
+подтверждения сервис хранит заявки и отправляет их после активации.
 
 Путь заявки: пошаговая форма → проверка Zod в браузере → `POST /api/contact` → повторная проверка
-Zod на сервере → honeypot и ограничение частоты → Telegram Bot API. Черновик формы сохраняется в
+Zod на сервере → honeypot и ограничение частоты → FormSubmit AJAX API. Черновик формы сохраняется в
 localStorage текущего браузера и удаляется после успешной отправки.
 
 Ограничение частоты запросов хранится в памяти экземпляра Cloudflare Function и может сброситься
@@ -78,9 +71,8 @@ localStorage текущего браузера и удаляется после 
 ## Публикация на Cloudflare Pages
 
 1. Выберите ветку `main`, build command `npm run build` и build directory `out`.
-2. Задайте `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID` как секреты для Production и Preview.
-3. Добавьте `NEXT_PUBLIC_SITE_URL=https://arnurmedetuly777-portfolio.pages.dev` как build variable.
-4. Подключённый Git-репозиторий создаёт deployment после push; вручную запустить его можно командой
+2. Добавьте `NEXT_PUBLIC_SITE_URL=https://arnurmedetuly777-portfolio.pages.dev` как build variable.
+3. Подключённый Git-репозиторий создаёт deployment после push; вручную запустить его можно командой
    `npm run pages:deploy` после входа в Wrangler через `npx wrangler login`.
 
 Next.js создаёт sitemap и robots по адресам `/sitemap.xml` и `/robots.txt`. После публикации

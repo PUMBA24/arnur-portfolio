@@ -1,19 +1,37 @@
-import { contactSchema } from '../../src/lib/contact-schema';
-
-type ContactEnvironment = {
-  TELEGRAM_BOT_TOKEN?: string;
-  TELEGRAM_CHAT_ID?: string;
-};
+import { contactEmail } from '../../src/data/contact';
+import { contactSchema, type ContactRequest } from '../../src/lib/contact-schema';
 
 type FunctionContext = {
   request: Request;
-  env: ContactEnvironment;
 };
 
 const maximumRequestBytes = 10 * 1024;
 const rateLimitWindowMs = 60 * 60 * 1000;
 const rateLimitMaximumRequests = 5;
 const requestsByClient = new Map<string, { count: number; resetAt: number }>();
+
+const projectTypeLabels: Record<ContactRequest['type'], string> = {
+  landing: 'Лендинг',
+  'multi-page': 'Многостраничный сайт',
+  store: 'Магазин или каталог',
+  changes: 'Доработки',
+  unsure: 'Пока не определён',
+};
+
+const budgetLabels: Record<Exclude<ContactRequest['budget'], 'custom'>, string> = {
+  'under-50': 'До 50 000 ₸',
+  '50-100': '50 000–100 000 ₸',
+  '100-200': '100 000–200 000 ₸',
+  'over-200': 'Больше 200 000 ₸',
+  discuss: 'Обсудим',
+};
+
+const deadlineLabels: Record<ContactRequest['deadline'], string> = {
+  'two-weeks': 'В течение двух недель',
+  month: 'В течение месяца',
+  flexible: 'Срок гибкий',
+  date: 'Есть конкретная дата',
+};
 
 function isRateLimited(clientKey: string, now: number) {
   for (const [key, entry] of requestsByClient) {
@@ -36,7 +54,36 @@ function jsonError(error: string, status: number) {
   return Response.json({ error }, { status });
 }
 
-export async function onRequestPost({ request, env }: FunctionContext) {
+function createFormSubmitPayload(data: ContactRequest) {
+  const budget =
+    data.budget === 'custom'
+      ? `${data.customBudget} ₸ (сумма указана посетителем)`
+      : budgetLabels[data.budget];
+
+  const payload: Record<string, string> = {
+    name: 'Заявка с портфолио Арнура',
+    _subject: 'Новая заявка с портфолио',
+    _template: 'table',
+    _url: 'https://arnurmedetuly777-portfolio.pages.dev/contact',
+    project_type: projectTypeLabels[data.type],
+    description: data.description,
+    budget,
+    deadline: deadlineLabels[data.deadline],
+    contact_method: data.contactChannel,
+    contact: data.contactValue,
+  };
+
+  if (data.contactChannel === 'email') payload.email = data.contactValue;
+
+  return payload;
+}
+
+function formSubmitAccepted(result: unknown) {
+  if (typeof result !== 'object' || result === null || !('success' in result)) return false;
+  return result.success === true || result.success === 'true';
+}
+
+export async function onRequestPost({ request }: FunctionContext) {
   const declaredSize = Number(request.headers.get('content-length'));
   if (Number.isFinite(declaredSize) && declaredSize > maximumRequestBytes) {
     return jsonError('Размер запроса слишком большой.', 413);
@@ -64,44 +111,30 @@ export async function onRequestPost({ request, env }: FunctionContext) {
   const data = parsed.data;
   if (data.website) return Response.json({ ok: true });
 
-  const botToken = env.TELEGRAM_BOT_TOKEN;
-  const chatId = env.TELEGRAM_CHAT_ID;
-  if (!botToken || !chatId) {
-    return jsonError('Форма пока не подключена. Напишите напрямую по контактным ссылкам.', 503);
-  }
-
-  const budget =
-    data.budget === 'custom' ? `${data.customBudget} ₸ (сумма указана посетителем)` : data.budget;
-  const message = [
-    'Новая заявка с портфолио',
-    `Тип сайта: ${data.type}`,
-    `Описание: ${data.description}`,
-    `Бюджет: ${budget}`,
-    `Срок: ${data.deadline}`,
-    `Контакт (${data.contactChannel}): ${data.contactValue}`,
-  ].join('\n');
-
   try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const response = await fetch(`https://formsubmit.co/ajax/${contactEmail}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: message }),
-      signal: AbortSignal.timeout(8_000),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(createFormSubmitPayload(data)),
+      signal: AbortSignal.timeout(10_000),
     });
     const result: unknown = await response.json();
 
-    if (
-      !response.ok ||
-      typeof result !== 'object' ||
-      result === null ||
-      !('ok' in result) ||
-      result.ok !== true
-    ) {
-      return jsonError('Не получилось отправить заявку. Попробуйте ещё раз или напишите напрямую.', 502);
+    if (!response.ok || !formSubmitAccepted(result)) {
+      return jsonError(
+        'FormSubmit не принял заявку. Попробуйте ещё раз или напишите напрямую.',
+        502,
+      );
     }
 
     return Response.json({ ok: true }, { status: 201 });
   } catch {
-    return jsonError('Не получилось отправить заявку. Попробуйте ещё раз или напишите напрямую.', 502);
+    return jsonError(
+      'Не удалось связаться с FormSubmit. Попробуйте ещё раз или напишите напрямую.',
+      502,
+    );
   }
 }

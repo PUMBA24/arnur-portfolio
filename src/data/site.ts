@@ -1,8 +1,10 @@
+import { contactEmail } from './contact';
+
 export const site = {
   name: 'Арнур',
   role: 'Junior frontend-разработчик',
   location: 'Алматы, Казахстан',
-  email: 'arnurmedetuly777@gmail.com',
+  email: contactEmail,
   telegram: '[ВАШ TELEGRAM]',
   whatsapp: '+7 747 906 70 52',
   availableForWork: true,
