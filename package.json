@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "pages:preview": "npm run build && wrangler pages dev out",
-    "pages:deploy": "npm run build && wrangler pages deploy out --project-name arnurmedetuly777-portfolio",
+    "pages:deploy": "npm run build && wrangler pages deploy out --project-name arnur",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,mdx}\" \"*.{json,mjs,ts}\" \"mdx-components.tsx\" \".prettierrc.json\" \"README.md\"",

@@ -73,22 +73,26 @@ Zod на сервере → honeypot и ограничение частоты �
 
 ## Админка и база заявок
 
-Откройте `/admin`. Первый вход создаёт начальную учётную запись из переменных
-`ADMIN_BOOTSTRAP_USERNAME` и `ADMIN_BOOTSTRAP_PASSWORD`, после чего пароль сохраняется только в
-виде PBKDF2-хэша. Используйте новый уникальный пароль длиной от 14 символов; пароль из переписки
-не используйте. Сессия хранится в D1, а браузер получает только HttpOnly cookie.
+Откройте `/admin`. Первый вход создаёт владельца из переменных
+`ADMIN_BOOTSTRAP_USERNAME` и `ADMIN_BOOTSTRAP_PASSWORD`, после чего сохраняется только PBKDF2-хэш.
+Используйте новый уникальный пароль длиной от 14 символов; пароль из переписки не используйте.
+Сессия хранится в D1, а браузер получает только HttpOnly cookie.
 
-Чтобы включить админку в Cloudflare:
+Для этого сайта база `arnur-portfolio-admin` уже подключена как `ADMIN_DB` в `wrangler.toml`,
+а SQL-миграция применена. Cloudflare Pages проект называется `arnur`, его адрес —
+`arnurmedetuly777-portfolio.pages.dev`. Чтобы задать или поменять данные первого входа, выполните
+команды из корня проекта:
 
-1. Выполните `npx wrangler login`, затем `npx wrangler d1 create arnur-portfolio-admin`.
-2. В Cloudflare Pages откройте Settings → Bindings → Add → D1 database. Назовите binding
-   `ADMIN_DB` и выберите созданную базу.
-3. Примените миграцию: `npx wrangler d1 migrations apply arnur-portfolio-admin --remote`.
-4. Добавьте два секрета командой
-   `npx wrangler pages secret put ADMIN_BOOTSTRAP_USERNAME --project-name arnurmedetuly777-portfolio`
-   и аналогичной командой для `ADMIN_BOOTSTRAP_PASSWORD`. Wrangler запросит значения отдельно;
-   пароль не передавайте аргументом команды и не отправляйте в чат.
-5. Повторно запустите deployment в Cloudflare Pages. После этого откройте `/admin` и войдите.
+```sh
+npx wrangler pages secret put ADMIN_BOOTSTRAP_USERNAME --project-name arnur
+npx wrangler pages secret put ADMIN_BOOTSTRAP_PASSWORD --project-name arnur
+```
+
+Wrangler запросит каждое значение отдельно. Для имени укажите `arnurmedetuly777`, а пароль вводите
+только в локальный запрос Wrangler: не передавайте его аргументом команды и не отправляйте в чат.
+После публикации конфигурации откройте `/admin` и войдите. Первый успешный вход создаёт учётную
+запись; секрет начального пароля после этого можно удалить из Pages, так как пароль уже сохранён
+как хэш в D1.
 
 В админке доступны список последних 200 заявок, фильтр по статусам, заметки и изменение статуса.
 Добавлять администраторов и отзывать их доступ может только владелец; другие администраторы работают

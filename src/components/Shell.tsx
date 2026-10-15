@@ -267,6 +267,9 @@ export function Footer() {
         {copyStatus || 'Скопировать email'}
       </button>
       <Link href="/sources">Лицензии и источники</Link>
+      <Link className="admin-entry" href="/admin">
+        Вход в админку
+      </Link>
       <a className="back-to-top" href="#top">
         Наверх ↑
       </a>
