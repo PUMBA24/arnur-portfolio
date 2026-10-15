@@ -30,6 +30,7 @@ export function ContactForm() {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [deliveryNotice, setDeliveryNotice] = useState('');
   const [draftMessage, setDraftMessage] = useState('Черновик сохраняется в этом браузере.');
   const {
     clearErrors,
@@ -111,6 +112,18 @@ export function ContactForm() {
       } catch (error) {
         console.error('Не удалось удалить отправленный черновик:', error);
       }
+      if (
+        typeof result === 'object' &&
+        result !== null &&
+        'stored' in result &&
+        result.stored === true &&
+        'emailAccepted' in result &&
+        result.emailAccepted === false
+      ) {
+        setDeliveryNotice(
+          'Заявка сохранена, но почтовое уведомление временно не отправилось. Я проверю её в админке.',
+        );
+      }
       setSent(true);
     } catch (error) {
       setServerError(
@@ -126,6 +139,7 @@ export function ContactForm() {
       <div className="notice" role="status">
         <h2>Спасибо!</h2>
         <p>Заявка отправлена. Я свяжусь с вами по указанному контакту.</p>
+        {deliveryNotice && <p>{deliveryNotice}</p>}
       </div>
     );
   }

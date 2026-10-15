@@ -1,0 +1,3 @@
+# Локальные секреты для входа в админку. Замените пароль на уникальный.
+ADMIN_BOOTSTRAP_USERNAME=arnurmedetuly777
+ADMIN_BOOTSTRAP_PASSWORD=REPLACE_WITH_A_UNIQUE_PASSPHRASE_14_CHARS_OR_MORE

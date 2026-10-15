@@ -18,9 +18,11 @@ npm install
 npm run dev
 ```
 
-Откройте <http://localhost:3000>. Для проверки формы вместе с Cloudflare Pages Function запустите
-`npm run pages:preview`: команда соберёт сайт и откроет Pages-эмулятор. Форма отправляется через
-FormSubmit, поэтому Telegram-секреты для неё не нужны. В `next dev` Pages Function не запускается.
+Откройте <http://localhost:3000>. `next dev` запускает только интерфейс, без серверных маршрутов.
+Чтобы проверить Pages Functions с локальной D1, соберите сайт и выполните
+`npx wrangler pages dev out --d1 ADMIN_DB=YOUR_DATABASE_ID`. Wrangler возьмёт тестовые секреты из
+`.dev.vars`; локальная база хранится отдельно от удалённой. Вместо `YOUR_DATABASE_ID` укажите
+ID базы, который Wrangler показывает после её создания.
 
 Проверки проекта:
 
@@ -45,6 +47,7 @@ npm run build
 | Секции и оформление главной страницы                       | `src/app/page.tsx` и `src/app/home.css`                        |
 | Изолированное оформление карточки проекта                  | `src/components/ProjectCard.module.css`                        |
 | Адрес сайта для metadata, sitemap и robots                 | `NEXT_PUBLIC_SITE_URL` в `.env.local`                          |
+| Начальный логин админки и пароль                           | Cloudflare Secrets или локальный `.dev.vars`                   |
 
 Перед публикацией замените `[ВАШ TELEGRAM]` в `src/data/site.ts` на свой Telegram. WhatsApp уже
 настроен; ссылка автоматически преобразует номер в формат, который ожидает `wa.me`.
@@ -61,12 +64,43 @@ npm run build
 подтверждения сервис хранит заявки и отправляет их после активации.
 
 Путь заявки: пошаговая форма → проверка Zod в браузере → `POST /api/contact` → повторная проверка
-Zod на сервере → honeypot и ограничение частоты → FormSubmit AJAX API. Черновик формы сохраняется в
-localStorage текущего браузера и удаляется после успешной отправки.
+Zod на сервере → honeypot и ограничение частоты → сохранение в D1 и отправка FormSubmit. Если
+почтовый сервис временно недоступен, сохранённая заявка остаётся в админке.
 
 Ограничение частоты запросов хранится в памяти экземпляра Cloudflare Function и может сброситься
 между запросами. Для надёжного общего лимита используйте Cloudflare Durable Objects или другое
 общее хранилище.
+
+## Админка и база заявок
+
+Откройте `/admin`. Первый вход создаёт начальную учётную запись из переменных
+`ADMIN_BOOTSTRAP_USERNAME` и `ADMIN_BOOTSTRAP_PASSWORD`, после чего пароль сохраняется только в
+виде PBKDF2-хэша. Используйте новый уникальный пароль длиной от 14 символов; пароль из переписки
+не используйте. Сессия хранится в D1, а браузер получает только HttpOnly cookie.
+
+Чтобы включить админку в Cloudflare:
+
+1. Выполните `npx wrangler login`, затем `npx wrangler d1 create arnur-portfolio-admin`.
+2. В Cloudflare Pages откройте Settings → Bindings → Add → D1 database. Назовите binding
+   `ADMIN_DB` и выберите созданную базу.
+3. Примените миграцию: `npx wrangler d1 migrations apply arnur-portfolio-admin --remote`.
+4. Добавьте два секрета командой
+   `npx wrangler pages secret put ADMIN_BOOTSTRAP_USERNAME --project-name arnurmedetuly777-portfolio`
+   и аналогичной командой для `ADMIN_BOOTSTRAP_PASSWORD`. Wrangler запросит значения отдельно;
+   пароль не передавайте аргументом команды и не отправляйте в чат.
+5. Повторно запустите deployment в Cloudflare Pages. После этого откройте `/admin` и войдите.
+
+В админке доступны список последних 200 заявок, фильтр по статусам, заметки и изменение статуса.
+Добавлять администраторов и отзывать их доступ может только владелец; другие администраторы работают
+с заявками. Удалить самого себя или последнего администратора нельзя. Новый администратор задаёт
+пароль при создании, поэтому передайте ему логин и временный пароль лично. FormSubmit хранит только
+почтовые отправки; заявки, сделанные до подключения D1,
+в админке автоматически не появятся.
+
+Локальный пример переменных лежит в `.dev.vars.example`. Скопируйте его в `.dev.vars` и задайте
+уникальный тестовый пароль. Создайте D1 в Cloudflare, возьмите его ID из вывода Wrangler и
+передайте его параметром `--d1 ADMIN_DB=<DATABASE_ID>` при запуске Pages Functions. Эта команда
+использует локальную копию базы. Не коммитьте `.dev.vars`.
 
 ## Публикация на Cloudflare Pages
 
@@ -88,7 +122,9 @@ src/
   components/           общие карточки, оболочка, фильтры и калькулятор
   content/blog/         тексты заметок в MDX
   data/                 редактируемые данные сайта и словарь интерфейса
-functions/api/          Cloudflare Pages Function для /api/contact
+migrations/             схема Cloudflare D1
+functions/api/          Cloudflare Pages Functions для заявок и админки
+  admin/                авторизация, сессии, заявки и администраторы
   lib/                  схема формы и небольшие общие функции
   types/                типы MDX
 ```

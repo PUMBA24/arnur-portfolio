@@ -1,8 +1,10 @@
 import { contactEmail } from '../../src/data/contact';
+import type { AdminEnvironment } from '../../src/lib/admin-server';
 import { contactSchema, type ContactRequest } from '../../src/lib/contact-schema';
 
 type FunctionContext = {
   request: Request;
+  env: AdminEnvironment;
 };
 
 const maximumRequestBytes = 10 * 1024;
@@ -83,7 +85,7 @@ function formSubmitAccepted(result: unknown) {
   return result.success === true || result.success === 'true';
 }
 
-export async function onRequestPost({ request }: FunctionContext) {
+export async function onRequestPost({ request, env }: FunctionContext) {
   const declaredSize = Number(request.headers.get('content-length'));
   if (Number.isFinite(declaredSize) && declaredSize > maximumRequestBytes) {
     return jsonError('Размер запроса слишком большой.', 413);
@@ -111,6 +113,36 @@ export async function onRequestPost({ request }: FunctionContext) {
   const data = parsed.data;
   if (data.website) return Response.json({ ok: true });
 
+  const budget =
+    data.budget === 'custom'
+      ? `${data.customBudget} ₸ (сумма указана посетителем)`
+      : budgetLabels[data.budget];
+  let stored = false;
+
+  if (env.ADMIN_DB) {
+    try {
+      const result = await env.ADMIN_DB.prepare(
+        `INSERT INTO applications
+         (id, project_type, description, budget, deadline, contact_method, contact, submitted_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+        .bind(
+          crypto.randomUUID(),
+          projectTypeLabels[data.type],
+          data.description,
+          budget,
+          deadlineLabels[data.deadline],
+          data.contactChannel,
+          data.contactValue,
+          Date.now(),
+        )
+        .run();
+      stored = result.success;
+    } catch {
+      stored = false;
+    }
+  }
+
   try {
     const response = await fetch(`https://formsubmit.co/ajax/${contactEmail}`, {
       method: 'POST',
@@ -124,14 +156,18 @@ export async function onRequestPost({ request }: FunctionContext) {
     const result: unknown = await response.json();
 
     if (!response.ok || !formSubmitAccepted(result)) {
+      if (stored)
+        return Response.json({ ok: true, stored: true, emailAccepted: false }, { status: 201 });
       return jsonError(
         'FormSubmit не принял заявку. Попробуйте ещё раз или напишите напрямую.',
         502,
       );
     }
 
-    return Response.json({ ok: true }, { status: 201 });
+    return Response.json({ ok: true, stored, emailAccepted: true }, { status: 201 });
   } catch {
+    if (stored)
+      return Response.json({ ok: true, stored: true, emailAccepted: false }, { status: 201 });
     return jsonError(
       'Не удалось связаться с FormSubmit. Попробуйте ещё раз или напишите напрямую.',
       502,
