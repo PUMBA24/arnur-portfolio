@@ -5,7 +5,7 @@ export const site = {
   role: 'Junior frontend-разработчик',
   location: 'Алматы, Казахстан',
   email: contactEmail,
-  telegram: '[ВАШ TELEGRAM]',
+  telegram: '@atues_3',
   whatsapp: '+7 747 906 70 52',
   availableForWork: true,
   skills: ['React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git'],
