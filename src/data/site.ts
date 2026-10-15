@@ -22,6 +22,15 @@ export type Project = {
   image: string;
   imageAlt: string;
   accent: string;
+  preview: {
+    brand: string;
+    navigation: string[];
+    eyebrow: string;
+    headline: string;
+    summary: string;
+    action: string;
+    theme: 'coffee' | 'fitness' | 'interior';
+  };
 };
 
 export const projects: Project[] = [
@@ -38,6 +47,15 @@ export const projects: Project[] = [
     image: '/projects/sary-arqa.jpg',
     imageAlt: 'Светлый интерьер кофейни с деревянной мебелью',
     accent: '#e8d6bd',
+    preview: {
+      brand: 'SARY ARQA',
+      navigation: ['Меню', 'О кофейне', 'Контакты'],
+      eyebrow: 'Кофе и тишина в центре города',
+      headline: 'Найди свой ритм',
+      summary: 'Спешелти кофе, свежая выпечка и уютные разговоры.',
+      action: 'Наше меню',
+      theme: 'coffee',
+    },
   },
   {
     slug: 'forma-studio',
@@ -52,6 +70,15 @@ export const projects: Project[] = [
     image: '/projects/forma-studio.jpg',
     imageAlt: 'Зал для тренировок с современным оборудованием',
     accent: '#dfe8cf',
+    preview: {
+      brand: 'FORMA / TRAINING CLUB',
+      navigation: ['Тренировки', 'Команда', 'Расписание'],
+      eyebrow: 'Тренируйся в своём темпе',
+      headline: 'Сильнее каждый день.',
+      summary: 'Персональные и групповые тренировки для реальной жизни.',
+      action: 'Записаться',
+      theme: 'fitness',
+    },
   },
   {
     slug: 'jaryq-interior',
@@ -66,6 +93,15 @@ export const projects: Project[] = [
     image: '/projects/jaryq-interior.jpg',
     imageAlt: 'Современный интерьер в спокойных натуральных оттенках',
     accent: '#e4e0d6',
+    preview: {
+      brand: 'JARYQ INTERIORS',
+      navigation: ['Проекты', 'Студия', 'Услуги'],
+      eyebrow: 'Интерьеры с характером',
+      headline: 'Пространство, в котором ты дома.',
+      summary: 'Проектируем спокойные и выразительные интерьеры для жизни.',
+      action: 'Смотреть проекты',
+      theme: 'interior',
+    },
   },
 ];
 

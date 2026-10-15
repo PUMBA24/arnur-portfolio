@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { Link } from '@/components/Link';
 import { AlmatyGreeting } from '@/components/AlmatyGreeting';
-import { ProjectCard } from '@/components/ProjectCard';
+import { FeaturedProjectsCarousel } from '@/components/FeaturedProjectsCarousel';
+import { HomeScrollReset } from '@/components/HomeScrollReset';
 import { Reveal } from '@/components/Reveal';
 import { faq, processSteps, projects, site } from '@/data/site';
 import { posts } from '@/data/posts';
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="home-page page">
+      <HomeScrollReset />
       <section aria-labelledby="home-title" className="hero-slab" id="home">
         <div className="hero-copy">
           <p className="eyebrow">
@@ -112,11 +114,7 @@ export default function HomePage() {
             </div>
             <p className="section-note">Учебные концепты для локального бизнеса и сферы услуг.</p>
           </div>
-          <div className="grid">
-            {projects.map((project) => (
-              <ProjectCard key={project.slug} project={project} />
-            ))}
-          </div>
+          <FeaturedProjectsCarousel projects={projects} />
           <p className="portfolio-note">
             Это учебные работы — я не выдаю их за заказы реальных клиентов.
           </p>

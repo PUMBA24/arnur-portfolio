@@ -1,4 +1,5 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 import { Extras, Footer, Header } from '@/components/Shell';
 import { Providers } from '@/components/Providers';
@@ -58,6 +59,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ru" suppressHydrationWarning>
       <body id="top">
+        <Script id="home-scroll-restoration" strategy="beforeInteractive">
+          {`if (window.location.pathname === '/' && !window.location.hash) window.history.scrollRestoration = 'manual';`}
+        </Script>
         <Providers>
           <a className="skip-link" href="#main-content">
             Перейти к содержимому
