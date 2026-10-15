@@ -271,7 +271,7 @@
 .arrow:hover:not(:disabled) {
   border-color: var(--accent);
   background: var(--accent);
-  color: #202321;
+  color: var(--on-accent);
 }
 
 .arrow:disabled {
