@@ -167,7 +167,11 @@ export async function onRequestPost({ request, env }: FunctionContext) {
         },
       },
     );
-  } catch {
+  } catch (error) {
+    console.error(
+      'Admin login failed:',
+      error instanceof Error ? error.message : 'Unknown login error',
+    );
     return jsonError('Не удалось выполнить вход. Проверьте настройки админки.', 500);
   }
 }
