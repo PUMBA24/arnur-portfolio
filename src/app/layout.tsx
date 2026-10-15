@@ -9,8 +9,13 @@ import './home.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arnurmedetuly777-portfolio.pages.dev';
 
+// Тег подтверждения Google Search Console — задаётся через GOOGLE_SITE_VERIFICATION
+// в .env.local или как переменная на Cloudflare Pages.
+const googleVerification = process.env.GOOGLE_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
   icons: { icon: '/favicon.svg' },
   alternates: { canonical: siteUrl },
   title: {
