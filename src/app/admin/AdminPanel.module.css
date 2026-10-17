@@ -223,6 +223,18 @@
   list-style: none;
 }
 
+.applicationItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.applicationItem > .applicationButton,
+.applicationItem > .selectedApplication {
+  flex: 1;
+  min-width: 0;
+}
+
 .applicationButton,
 .selectedApplication {
   display: grid;

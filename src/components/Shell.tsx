@@ -281,7 +281,6 @@ export function Footer() {
 export function Extras() {
   const [readingProgress, setReadingProgress] = useState(0);
   const [easterEggIsVisible, setEasterEggIsVisible] = useState(false);
-  const cursor = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     let scrollFrame = 0;
@@ -314,17 +313,9 @@ export function Extras() {
       }
     };
 
-    const handlePointerMove = (event: PointerEvent) => {
-      cursor.current?.style.setProperty(
-        'transform',
-        `translate3d(${event.clientX}px, ${event.clientY}px, 0)`,
-      );
-    };
-
     window.addEventListener('scroll', updateProgress, { passive: true });
     window.addEventListener('resize', updateProgress);
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
     updateProgress();
 
     return () => {
@@ -332,7 +323,6 @@ export function Extras() {
       window.removeEventListener('scroll', updateProgress);
       window.removeEventListener('resize', updateProgress);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('pointermove', handlePointerMove);
     };
   }, []);
 
@@ -343,7 +333,6 @@ export function Extras() {
         className="reading-progress"
         style={{ transform: `scaleX(${readingProgress / 100})` }}
       />
-      <span aria-hidden="true" className="custom-cursor" ref={cursor} />
       {easterEggIsVisible && (
         <p className="easter-egg" role="status">
           Секрет найден. Спасибо, что заглянули!

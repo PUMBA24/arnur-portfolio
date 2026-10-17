@@ -268,6 +268,37 @@ export function AdminPanel() {
     }
   }
 
+  async function deleteApplication(application: AdminApplication) {
+    if (!window.confirm(`Удалить заявку «${application.projectType}»? Это действие нельзя отменить.`)) return;
+
+    setSaving(true);
+    setErrorMessage('');
+    setNotice('');
+    try {
+      const response = await fetch('/api/admin/leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: application.id }),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok) throw new Error(getErrorMessage(result, 'Не удалось удалить заявку.'));
+
+      const remainingApplications = applications.filter((item) => item.id !== application.id);
+      setApplications(remainingApplications);
+      setSelectedId((current) =>
+        current === application.id ? (remainingApplications[0]?.id ?? '') : current,
+      );
+      setNoteDraft((current) =>
+        current.applicationId === application.id ? { applicationId: '', value: '' } : current,
+      );
+      setNotice('Заявка удалена.');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Не удалось удалить заявку.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function addAdmin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -467,7 +498,7 @@ export function AdminPanel() {
           ) : (
             <ul className={styles.applicationList}>
               {visibleApplications.map((application) => (
-                <li key={application.id}>
+                <li className={styles.applicationItem} key={application.id}>
                   <button
                     aria-pressed={application.id === selectedId}
                     className={
@@ -483,6 +514,15 @@ export function AdminPanel() {
                     <span className={styles.applicationDate}>
                       {formatDate(application.submittedAt)}
                     </span>
+                  </button>
+                  <button
+                    aria-label={`Удалить заявку: ${application.projectType}`}
+                    className={styles.removeButton}
+                    disabled={saving}
+                    onClick={() => void deleteApplication(application)}
+                    type="button"
+                  >
+                    Удалить
                   </button>
                 </li>
               ))}

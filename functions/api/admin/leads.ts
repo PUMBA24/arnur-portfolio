@@ -128,3 +128,46 @@ export async function onRequestPatch({ request, env }: FunctionContext) {
     return jsonError('Не удалось сохранить заявку.', 500);
   }
 }
+
+export async function onRequestDelete({ request, env }: FunctionContext) {
+  if (!requestHasSameOrigin(request)) return jsonError('Запрос отклонён.', 403);
+  if (!env.ADMIN_DB) return jsonError('Хранилище админки ещё не подключено.', 503);
+
+  try {
+    const admin = await getAdminIdentity(request, env.ADMIN_DB);
+    if (!admin) return jsonError('Войдите в админку.', 401);
+  } catch {
+    return jsonError('Не удалось проверить доступ.', 500);
+  }
+
+  const parsedBody = await readJsonBody(request, 1024);
+  if (!parsedBody.ok) {
+    return parsedBody.tooLarge
+      ? jsonError('Слишком большой запрос.', 413)
+      : jsonError('Укажите корректный ID заявки.', 400);
+  }
+
+  const body = parsedBody.value;
+  if (
+    typeof body !== 'object' ||
+    body === null ||
+    !('id' in body) ||
+    typeof body.id !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.id)
+  ) {
+    return jsonError('Укажите корректный ID заявки.', 400);
+  }
+
+  try {
+    const result = await env.ADMIN_DB.prepare('DELETE FROM applications WHERE id = ?')
+      .bind(body.id)
+      .run();
+
+    if (!result.success) return jsonError('Не удалось удалить заявку.', 500);
+    if (result.meta?.changes === 0) return jsonError('Заявка не найдена.', 404);
+
+    return Response.json({ deleted: true, id: body.id });
+  } catch {
+    return jsonError('Не удалось удалить заявку.', 500);
+  }
+}

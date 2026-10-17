@@ -326,19 +326,6 @@ a {
   pointer-events: none;
 }
 
-.custom-cursor {
-  position: fixed;
-  z-index: 55;
-  top: -4px;
-  left: -4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--olive);
-  pointer-events: none;
-  will-change: transform;
-}
-
 .easter-egg {
   position: fixed;
   z-index: 80;
@@ -1265,16 +1252,6 @@ p {
   .article-row {
     grid-template-columns: 1fr;
     gap: 4px;
-  }
-
-  .custom-cursor {
-    display: none;
-  }
-}
-
-@media (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .custom-cursor {
-    display: none;
   }
 }
 
